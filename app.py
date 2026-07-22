@@ -47,7 +47,6 @@ if auth and cloud_online:
     m_idx = mese_nom.index(m_sel) + 1
 
     df_t = pd.DataFrame(s_turni.get_all_records())
-    df_f = pd.DataFrame(s_ferie.get_all_records())
 
     with st.expander("👁️ Vedi Calendario Completo", expanded=True):
         cal = calendar.Calendar(firstweekday=0)
@@ -57,7 +56,7 @@ if auth and cloud_online:
                 with cols[i]:
                     bg = "#ffffff" if giorno.month == m_idx else "#f0f2f6"
                     st.markdown(f"<div style='border:1px solid #ddd;padding:5px;height:120px;background:{bg};border-radius:5px;'><b>{giorno.day}</b>", unsafe_allow_html=True)
-                    if not df_t.empty:
+                    if not df_t.empty and 'data' in df_t.columns:
                         g_t = df_t[df_t['data'] == str(giorno)]
                         for _, r in g_t.iterrows():
                             st.markdown(f"<div style='background:{COLORI.get(r['dipendente'])};color:white;font-size:10px;padding:2px;margin-bottom:2px;border-radius:3px;'>{r['dipendente'][:1]}. {r['inizio'][:5]}</div>", unsafe_allow_html=True)
@@ -65,9 +64,9 @@ if auth and cloud_online:
 
     st.divider()
 
-    # 2. AZIONI
+    # 2. AZIONI ADMIN
     if utente == "Eleonora (Admin)":
-        t1, t2, t3 = st.tabs(["📝 Inserisci Turno", "✅ Approvazioni", "🕒 Timbrature"])
+        t1, t2 = st.tabs(["📝 Inserisci Turno", "🕒 Timbrature"])
         with t1:
             with st.form("t"):
                 d_s = st.selectbox("Dipendente", DIP)
@@ -78,15 +77,13 @@ if auth and cloud_online:
                     s_turni.append_row([str(datetime.now()), str(g_s), str(h1), str(h2), d_s, ""])
                     st.success("✅ Salvato nel Cloud!")
                     st.rerun()
-        with t3:
+        with t2:
             st.write("Registro Timbrature (da Google Sheets)")
             st.dataframe(pd.DataFrame(s_timb.get_all_records()))
 
+    # 3. AZIONI DIPENDENTE
     else:
         st.subheader("Segna la tua presenza oggi")
         if st.button("🔴 Timbra Inizio/Fine", use_container_width=True):
             s_timb.append_row([str(datetime.now()), utente, str(date.today()), datetime.now().strftime("%H:%M"), ""])
             st.success("✅ Timbrata registrata nel Cloud!")
-
-elif not cloud_online and utente != "---":
-    st.error("L'app non riesce a connettersi a Google Sheets. Verifica i Secrets su Streamlit.")
