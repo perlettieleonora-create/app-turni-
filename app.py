@@ -1,4 +1,6 @@
 import streamlit as st
+st.warning("VERIFICA VERSIONE: 2.0 CLOUD")
+import streamlit as st
 import pandas as pd
 import gspread
 from datetime import datetime, time, date
